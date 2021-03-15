@@ -3,7 +3,9 @@ package com.atguigu.eduservice.controller;
 
 import com.atguigu.commonutils.R;
 import com.atguigu.eduservice.entity.EduTeacher;
+import com.atguigu.eduservice.entity.vo.TeacherQuery;
 import com.atguigu.eduservice.service.EduTeacherService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -49,6 +51,54 @@ public class EduTeacherController {
         }else {
             return  R.error();
         }
+    }
+
+    //访问地址http://localhost:8001/eduservice/teacher/findAll
+    //分页讲师列表
+    @ApiOperation(value = "分页讲师列表")
+    @GetMapping("pageList/{page}/{limit}")
+    public R pageList(
+        @ApiParam(name = "page", value = "当前页码", required = true)
+        @PathVariable Long page,
+
+        @ApiParam(name = "limit", value = "每页记录数", required = true)
+        @PathVariable Long limit){
+
+        //创建page对象
+        Page<EduTeacher> pageParam = new Page<>(page, limit);
+        //调用方法实现分页
+        //调用方法的时候，底层封装，把分页所有封装数据封装到pageParam对象里面
+        teacherService.page(pageParam, null);
+        long total = pageParam.getTotal();//总数
+        List<EduTeacher> records = pageParam.getRecords();//数据list集合
+
+//        HashMap map = new HashMap();
+//        map.put("total", total);
+//        map.put("rows", records);
+//        return R.ok().data(map);
+
+        return  R.ok().data("total", total).data("rows", records);
+    }
+
+
+    @ApiOperation(value = "条件查询分页讲师列表")
+    @PostMapping("pageQuery/{page}/{limit}")
+    public R pageQuery(
+        @ApiParam(name = "page", value = "当前页码", required = true)
+        @PathVariable Long page,
+
+        @ApiParam(name = "limit", value = "每页记录数", required = true)
+        @PathVariable Long limit,
+
+        @ApiParam(name = "teacherQuery", value = "查询对象", required = false)
+                TeacherQuery teacherQuery){
+        Page<EduTeacher> pageParam = new Page<>(page, limit);
+
+        teacherService.pageQuery(pageParam, teacherQuery);
+        List<EduTeacher> records = pageParam.getRecords();
+        long total = pageParam.getTotal();
+
+        return  R.ok().data("total", total).data("rows", records);
     }
 
 }
