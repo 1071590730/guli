@@ -5,6 +5,7 @@ import com.atguigu.commonutils.R;
 import com.atguigu.eduservice.entity.EduTeacher;
 import com.atguigu.eduservice.entity.vo.TeacherQuery;
 import com.atguigu.eduservice.service.EduTeacherService;
+import com.atguigu.service.exceptionhandler.GuliException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -36,20 +37,28 @@ public class EduTeacherController {
     @ApiOperation(value = "所有讲师列表")
     @GetMapping("/findAll")
     public R findAllTeacher() {
+
+        //异常测试
+        try {
+            int a = 10/0;
+        }catch(Exception e) {
+            throw new GuliException(20001,"出现自定义异常");
+        }
+
         List<EduTeacher> list = teacherService.list(null);
-        return R.ok().data("items",list);
+        return R.ok().data("items", list);
     }
 
     //访问地址http://localhost:8001/eduservice/teacher/findAll
     //逻辑删除讲师方法
     @ApiOperation(value = "逻辑删除讲师")
     @DeleteMapping("{id}")
-    public R removeById(@ApiParam(name = "id", value = "讲师ID", required = true)@PathVariable String id){
+    public R removeById(@ApiParam(name = "id", value = "讲师ID", required = true) @PathVariable String id) {
         boolean b = teacherService.removeById(id);
-        if (b){
+        if (b) {
             return R.ok();
-        }else {
-            return  R.error();
+        } else {
+            return R.error();
         }
     }
 
@@ -58,11 +67,11 @@ public class EduTeacherController {
     @ApiOperation(value = "分页讲师列表")
     @GetMapping("pageList/{page}/{limit}")
     public R pageList(
-        @ApiParam(name = "page", value = "当前页码", required = true)
-        @PathVariable Long page,
+            @ApiParam(name = "page", value = "当前页码", required = true)
+            @PathVariable Long page,
 
-        @ApiParam(name = "limit", value = "每页记录数", required = true)
-        @PathVariable Long limit){
+            @ApiParam(name = "limit", value = "每页记录数", required = true)
+            @PathVariable Long limit) {
 
         //创建page对象
         Page<EduTeacher> pageParam = new Page<>(page, limit);
@@ -77,29 +86,59 @@ public class EduTeacherController {
 //        map.put("rows", records);
 //        return R.ok().data(map);
 
-        return  R.ok().data("total", total).data("rows", records);
+        return R.ok().data("total", total).data("rows", records);
     }
 
 
     @ApiOperation(value = "条件查询分页讲师列表")
     @PostMapping("pageQuery/{page}/{limit}")
     public R pageQuery(
-        @ApiParam(name = "page", value = "当前页码", required = true)
-        @PathVariable Long page,
+            @ApiParam(name = "page", value = "当前页码", required = true)
+            @PathVariable Long page,
 
-        @ApiParam(name = "limit", value = "每页记录数", required = true)
-        @PathVariable Long limit,
+            @ApiParam(name = "limit", value = "每页记录数", required = true)
+            @PathVariable Long limit,
 
-        @ApiParam(name = "teacherQuery", value = "查询对象", required = false)
-                TeacherQuery teacherQuery){
+            @ApiParam(name = "teacherQuery", value = "查询对象", required = false)
+                    TeacherQuery teacherQuery) {
         Page<EduTeacher> pageParam = new Page<>(page, limit);
 
         teacherService.pageQuery(pageParam, teacherQuery);
         List<EduTeacher> records = pageParam.getRecords();
         long total = pageParam.getTotal();
 
-        return  R.ok().data("total", total).data("rows", records);
+        return R.ok().data("total", total).data("rows", records);
+    }
+
+    @ApiOperation(value = "添加讲师接口")
+    @PostMapping("addTeacher")
+    public R addTeacher(@RequestBody EduTeacher eduTeacher){
+        boolean save = teacherService.save(eduTeacher);
+        if (save){
+            return R.ok();
+        }else {
+            return  R.error();
+        }
+    }
+
+    @ApiOperation(value = "id查询讲师")
+    @GetMapping("getTeacher/{id}")
+    public R getTeacher(@PathVariable String id){
+        EduTeacher eduTeacher = teacherService.getById(id);
+        return R.ok().data("Teacher",eduTeacher);
+    }
+
+    @ApiOperation(value = "讲师修改")
+    @PostMapping("updateTeacher")
+    public R updateTeacher(@RequestBody EduTeacher eduTeacher){
+        boolean update = teacherService.updateById(eduTeacher);
+        if (update){
+            return R.ok();
+        }else {
+            return  R.error();
+        }
     }
 
 }
+
 
